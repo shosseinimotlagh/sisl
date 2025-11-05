@@ -1,10 +1,10 @@
-name: Sisl v13 Build
+name: Sisl Build
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - stable/v12.x
+      - stable/v8.x
       - master
 
 jobs:
@@ -12,11 +12,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ["ubuntu-24.04"]
+        platform: ["ubuntu-22.04"]
         build-type: ["Debug", "Release"]
         malloc-impl: ["libc", "tcmalloc"]
+        prerelease: ["True", "False"]
         tooling: ["Sanitize", "Coverage", "None"]
         exclude:
+          - build-type: Debug
+            prerelease: "False"
           - build-type: Debug
             tooling: None
           - build-type: Debug
@@ -33,10 +36,11 @@ jobs:
       branch: ${{ github.ref }}
       build-type: ${{ matrix.build-type }}
       malloc-impl: ${{ matrix.malloc-impl }}
+      prerelease: ${{ matrix.prerelease }}
       tooling: ${{ matrix.tooling }}
       testing: 'True'
   ChainBuild:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-22.04"
     steps:
     - name: Start IOManager Build
       run: |

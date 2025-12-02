@@ -47,6 +47,7 @@ runs:
         fail-on-cache-miss: ${{ inputs.fail_on_cache_miss }}
 
     - name: Restore Testing Cache
+      id: restore-test-cache
       uses: actions/cache/restore@v4
       with:
         path: |
@@ -59,5 +60,5 @@ runs:
       shell: bash
       run: |
         conan cache restore ~/conan_cache_save.tgz
-      if: ${{ ((steps.restore-cache.outputs.cache-hit == 'true') || ( inputs.load_any == 'True' ))}}
+      if: ${{ ((steps.restore-cache.outputs.cache-hit == 'true') || (steps.restore-test-cache.outputs.cache-hit == 'true'))}}
 

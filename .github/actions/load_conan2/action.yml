@@ -59,6 +59,4 @@ runs:
     - name: Restore Tarball
       shell: bash
       run: |
-        conan cache restore ~/conan_cache_save.tgz
-      if: ${{ ((steps.restore-cache.outputs.cache-hit == 'true') || (steps.restore-test-cache.outputs.cache-hit == 'true'))}}
-
+        if [ -r ~/conan_cache_save.tgz ]; then conan cache restore ~/conan_cache_save.tgz; fi

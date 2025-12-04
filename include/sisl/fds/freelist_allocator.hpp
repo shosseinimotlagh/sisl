@@ -50,9 +50,8 @@ struct free_list_header {
 };
 
 #if defined(FREELIST_METRICS) || !defined(NDEBUG)
-class FreeListAllocatorMetrics : public sisl::MetricsGroupWrapper {
-public:
-    explicit FreeListAllocatorMetrics() : sisl::MetricsGroupWrapper("FreeListAllocator", "Singleton") {
+struct FreeListAllocatorMetrics : public sisl::MetricsGroupWrapper {
+    FreeListAllocatorMetrics() : sisl::MetricsGroupWrapper("FreeListAllocator", "Singleton") {
         REGISTER_COUNTER(freelist_alloc_hit, "freelist: Number of allocs from cache");
         REGISTER_COUNTER(freelist_alloc_miss, "freelist: Number of allocs from system");
         REGISTER_COUNTER(freelist_dealloc_passthru, "freelist: Number of dealloc not cached because of size mismatch");
@@ -86,7 +85,6 @@ public:
 
 template < uint16_t MaxListCount, std::size_t Size >
 class FreeListAllocatorImpl {
-private:
     free_list_header* m_head;
     int64_t m_list_count;
 
@@ -125,8 +123,8 @@ public:
 
     bool deallocate(uint8_t* const mem, const uint32_t size_alloced) {
         if ((size_alloced != Size) || (m_list_count == MaxListCount)) {
-            std::free(static_cast< void* >(mem));
-            return true;
+            std::free(static_cast< void* >(mem)); // LCOV_EXCL_EXCL
+            return true;                          // LCOV_EXCL_EXCL
         }
         auto* const hdr{reinterpret_cast< free_list_header* >(mem)};
         hdr->next = m_head;
@@ -139,7 +137,6 @@ public:
 
 template < const uint16_t MaxListCount, const size_t Size >
 class FreeListAllocator {
-private:
     folly::ThreadLocalPtr< FreeListAllocatorImpl< MaxListCount, Size > > m_impl;
 
 public:
@@ -160,8 +157,8 @@ public:
 
     bool deallocate(uint8_t* const mem, const uint32_t size_alloced) {
         if (sisl_unlikely(m_impl.get() == nullptr)) {
-            std::free(static_cast< void* >(mem));
-            return true;
+            std::free(static_cast< void* >(mem)); // LCOV_EXCL_EXCL
+            return true;                          // LCOV_EXCL_EXCL
         } else {
             return m_impl->deallocate(mem, size_alloced);
         }
